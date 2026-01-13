@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>贪吃蛇诗人 - 无尽模式</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --panel-bg: #1e1e1e;
+            --accent-color: #bb86fc;
+            --secondary-color: #03dac6;
+            --danger-color: #cf6679;
+            --text-color: #e0e0e0;
+            --snake-color: #3700b3;
+            --snake-head: #6200ee;
+            --word-text: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .col {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #333;
+        }
+
+        .col-left {
+            flex: 1;
+            min-width: 280px;
+            background-color: var(--panel-bg);
+        }
+
+        .col-center {
+            flex: 2;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #000;
+        }
+
+        .col-right {
+            flex: 1;
+            min-width: 280px;
+            background-color: var(--panel-bg);
+            border-right: none;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* 左侧样式 */
+        .collection-box {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 120px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 25px;
+            align-content: flex-start;
+        }
+
+        .word-tag {
+            background: var(--snake-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            animation: popIn 0.3s ease;
+        }
+
+        #poem-display {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 8px;
+            font-style: italic;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            min-height: 150px;
+            font-size: 0.9rem;
+            color: #d1c4e9;
+            margin-bottom: 15px;
+        }
+
+        /* 中间样式 */
+        #score-board {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            z-index: 10;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        #status-msg {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1rem;
+            color: #888;
+            z-index: 10;
+        }
+
+        canvas {
+            background-color: #222;
+            border: 2px solid #444;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            border-radius: 4px;
+        }
+
+        /* 按钮 */
+        .btn {
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .btn:hover { filter: brightness(1.2); }
+
+        .btn.secondary {
+            background-color: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+        
+        .btn.secondary:hover { background-color: rgba(187, 134, 252, 0.1); }
+
+        .btn.continue-btn {
+            background-color: var(--secondary-color); /* 绿色按钮代表继续 */
+            display: none; /* 默认隐藏 */
+            margin-top: 10px;
+        }
+
+        .btn.continue-btn:hover {
+            background-color: #02b3a2;
+        }
+
+        /* 右侧画廊 */
+        .gallery-item {
+            margin-bottom: 20px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+            transition: transform 0.3s;
+        }
+        
+        .gallery-item:hover {
+            transform: scale(1.02);
+            border-color: var(--secondary-color);
+        }
+
+        .gallery-img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .gallery-caption {
+            padding: 8px;
+            font-size: 0.8rem;
+            color: #aaa;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 弹窗 */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .overlay h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+        }
+
+        .overlay p {
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+            max-width: 80%;
+            text-align: center;
+        }
+
+        .hidden { display: none !important; }
+
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 左侧：灵感与诗歌 -->
+        <div class="col col-left">
+            <h2>灵感收集 (0/8)</h2>
+            <div id="collection-box" class="collection-box">
+                <!-- 单词将在这里生成 -->
+            </div>
+
+            <div id="creation-panel" class="hidden">
+                <h2>AI 诗作</h2>
+                <div id="poem-display">等待生成...</div>
+                <button class="btn secondary" onclick="remixPoem()">✨ 重新混合</button>
+                <button class="btn" id="btn-paint" onclick="generateImage()">🎨 完成并作画</button>
+                <!-- 新增：继续游戏按钮 -->
+                <button class="btn continue-btn" id="btn-continue" onclick="continueGame()">▶️ 继续冒险 (保留分数)</button>
+            </div>
+        </div>
+
+        <!-- 中间：游戏 -->
+        <div class="col col-center">
+            <div id="score-board">分数: 0</div>
+            <div id="status-msg">收集 8 个单词来写诗</div>
+            
+            <canvas id="gameCanvas" width="500" height="500"></canvas>
+
+            <!-- 游戏开始/失败 覆盖层 -->
+            <div id="start-overlay" class="overlay">
+                <h1>贪吃蛇诗人</h1>
+                <p>收集单词，撞墙即死。<br>随着分数增加，速度会越来越快。<br>完成任务后可继续无限游玩！</p>
+                <button class="btn" style="max-width: 200px;" onclick="startGame()">开始游戏</button>
+            </div>
+
+            <div id="game-over-overlay" class="overlay hidden">
+                <h1 style="color: var(--danger-color)">游戏结束</h1>
+                <p>你撞到了障碍物！<br>最终得分: <span id="final-score">0</span></p>
+                <button class="btn" style="max-width: 200px;" onclick="startGame()">重新挑战</button>
+            </div>
+        </div>
+
+        <!-- 右侧：画廊 -->
+        <div class="col col-right">
+            <h2>作品画廊</h2>
+            <div id="gallery-container" style="overflow-y: auto; flex: 1;">
+                <!-- 生成的图片会出现在这里 -->
+                <div style="color: #666; text-align: center; margin-top: 50px; font-style: italic;">
+                    暂无作品
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === 游戏配置 ===
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const GRID_SIZE = 25;
+        const TILE_COUNT = canvas.width / GRID_SIZE;
+
+        // === 速度控制 ===
+        const BASE_SPEED = 200; 
+        const MIN_SPEED = 60;   
+        const SPEED_STEP = 3;   
+
+        const WORD_POOL = [
+            "Dream", "Star", "Moon", "Fire", "Ocean", "Sky", 
+            "Time", "Heart", "Love", "Wind", "Rain", "Light", 
+            "Dark", "Soul", "Night", "Sun", "Hope", "Fear",
+            "Blue", "Gold", "Tree", "Bird", "Song", "Silence",
+            "Cyber", "Neon", "Void", "Data", "Pulse", "Echo"
+        ];
+
+        let snake = [];
+        let velocity = { x: 0, y: 0 };
+        let currentWord = null;
+        let collectedWords = [];
+        let score = 0;
+        let gameTimeout = null;
+        let isGameRunning = false;
+        let generatedPoemText = "";
+        let imageHistory = [];
+
+        // DOM 元素
+        const scoreEl = document.getElementById('score-board');
+        const finalScoreEl = document.getElementById('final-score');
+        const collectionBox = document.getElementById('collection-box');
+        const creationPanel = document.getElementById('creation-panel');
+        const poemDisplay = document.getElementById('poem-display');
+        const startOverlay = document.getElementById('start-overlay');
+        const gameOverOverlay = document.getElementById('game-over-overlay');
+        const galleryContainer = document.getElementById('gallery-container');
+        const statusMsg = document.getElementById('status-msg');
+        const leftHeader = document.querySelector('.col-left h2');
+        const btnPaint = document.getElementById('btn-paint');
+        const btnContinue = document.getElementById('btn-continue');
+
+        function startGame() {
+            // 如果是完全重新开始，才重置所有状态
+            resetGameLogic();
+            spawnWord();
+            
+            startOverlay.classList.add('hidden');
+            gameOverOverlay.classList.add('hidden');
+            
+            isGameRunning = true;
+            if (gameTimeout) clearTimeout(gameTimeout);
+            gameLoop();
+        }
+
+        function resetGameLogic() {
+            snake = [
+                { x: 5, y: 10 },
+                { x: 4, y: 10 },
+                { x: 3, y: 10 }
+            ];
+            velocity = { x: 1, y: 0 };
+            collectedWords = [];
+            score = 0;
+            currentWord = null;
+            imageHistory = []; 
+
+            updateUI();
+            creationPanel.classList.add('hidden');
+            statusMsg.innerText = "收集 8 个单词来写诗";
+            statusMsg.style.color = "#888";
+        }
+
+        function spawnWord() {
+            let validPosition = false;
+            let wordText = WORD_POOL[Math.floor(Math.random() * WORD_POOL.length)];
+            
+            while (!validPosition) {
+                currentWord = {
+                    x: Math.floor(Math.random() * TILE_COUNT),
+                    y: Math.floor(Math.random() * TILE_COUNT),
+                    text: wordText
+                };
+
+                validPosition = true;
+                for (let part of snake) {
+                    if (part.x === currentWord.x && part.y === currentWord.y) {
+                        validPosition = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        function gameLoop() {
+            if (!isGameRunning) return;
+            update();
+            draw();
+
+            const currentDelay = Math.max(MIN_SPEED, BASE_SPEED - (collectedWords.length * SPEED_STEP));
+            gameTimeout = setTimeout(gameLoop, currentDelay);
+        }
+
+        function update() {
+            const head = { x: snake[0].x + velocity.x, y: snake[0].y + velocity.y };
+
+            // 撞墙检测
+            if (head.x < 0 || head.x >= TILE_COUNT || head.y < 0 || head.y >= TILE_COUNT) {
+                triggerGameOver();
+                return;
+            }
+
+            // 撞自己检测
+            for (let i = 0; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    triggerGameOver();
+                    return;
+                }
+            }
+
+            snake.unshift(head);
+
+            // 吃单词检测
+            let ate = false;
+            if (currentWord && head.x === currentWord.x && head.y === currentWord.y) {
+                collectWord(currentWord.text);
+                spawnWord();
+                ate = true;
+            }
+
+            if (!ate) {
+                snake.pop();
+            }
+        }
+
+        function triggerGameOver() {
+            isGameRunning = false;
+            clearTimeout(gameTimeout);
+            finalScoreEl.innerText = score;
+            gameOverOverlay.classList.remove('hidden');
+        }
+
+        function collectWord(word) {
+            collectedWords.push(word);
+            score += 10;
+            updateUI();
+
+            if (collectedWords.length === 8) {
+                isGameRunning = false;
+                clearTimeout(gameTimeout);
+                statusMsg.innerText = "灵感收集完毕！";
+                statusMsg.style.color = "var(--accent-color)";
+                generatePoem();
+                creationPanel.classList.remove('hidden');
+                
+                // 重置按钮状态（如果是继续游戏触发的下一轮，需要恢复初始按钮显示）
+                btnPaint.style.display = 'block';
+                btnContinue.style.display = 'none';
+            }
+        }
+
+        function updateUI() {
+            scoreEl.innerText = `分数: ${score}`;
+            leftHeader.innerText = `灵感收集 (${collectedWords.length}/8)`;
+            
+            collectionBox.innerHTML = '';
+            collectedWords.forEach(word => {
+                const span = document.createElement('span');
+                span.className = 'word-tag';
+                span.innerText = word;
+                collectionBox.appendChild(span);
+            });
+        }
+
+        function draw() {
+            ctx.fillStyle = '#1e1e1e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#2a2a2a';
+            ctx.lineWidth = 1;
+            for(let i=0; i<=TILE_COUNT; i++) {
+                ctx.beginPath(); ctx.moveTo(i*GRID_SIZE, 0); ctx.lineTo(i*GRID_SIZE, canvas.height); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i*GRID_SIZE); ctx.lineTo(canvas.width, i*GRID_SIZE); ctx.stroke();
+            }
+
+            if (currentWord) {
+                ctx.fillStyle = '#bb86fc';
+                ctx.font = 'bold 13px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(currentWord.text, currentWord.x * GRID_SIZE + GRID_SIZE/2, currentWord.y * GRID_SIZE + GRID_SIZE/2);
+            }
+
+            snake.forEach((part, index) => {
+                ctx.fillStyle = index === 0 ? '#03dac6' : '#3700b3';
+                ctx.fillRect(part.x * GRID_SIZE + 1, part.y * GRID_SIZE + 1, GRID_SIZE - 2, GRID_SIZE - 2);
+            });
+        }
+
+        // === AI 创意与画廊 ===
+        const POEM_STYLES = [
+            {
+                name: "现代自由诗",
+                template: (w) => `In the shadow of the ${w[0]},\nI heard the ${w[1]} sing.\n\nWe chase the ${w[2]} through ${w[3]},\nBut find only ${w[4]}.\n\nThe ${w[5]} remains,\nWhile ${w[6]} and ${w[7]} drift away.`
+            },
+            {
+                name: "极简短句",
+                template: (w) => `${w[0]}\n${w[1]}\n${w[2]}.\n\n${w[3]} is ${w[4]}.\n${w[5]}.\n${w[6]} ${w[7]}.`
+            },
+            {
+                name: "赛博科幻",
+                template: (w) => `SYSTEM ALERT: ${w[0]} detected.\nAccessing ${w[1]}...\n\nThe ${w[2]} protocol initiated.\nTarget: ${w[3]}.\n\nStatus: ${w[4]}.\n${w[5]} uploading.\n${w[6]} complete.\n${w[7]} offline.`
+            }
+        ];
+
+        let currentStyleIndex = 0;
+
+        function generatePoem() {
+            const shuffled = [...collectedWords].sort(() => 0.5 - Math.random());
+            generatedPoemText = POEM_STYLES[currentStyleIndex].template(shuffled);
+            poemDisplay.innerText = generatedPoemText;
+        }
+
+        function remixPoem() {
+            currentStyleIndex = (currentStyleIndex + 1) % POEM_STYLES.length;
+            poemDisplay.style.opacity = 0.5;
+            setTimeout(() => {
+                generatePoem();
+                poemDisplay.style.opacity = 1;
+            }, 500);
+        }
+
+        function generateImage() {
+            poemDisplay.innerText += "\n\n[正在生成画作...]";
+            // 隐藏绘画按钮，防止重复点击
+            btnPaint.style.display = 'none';
+            
+            const seed = generatedPoemText.replace(/\s/g, '');
+            const newImgUrl = `https://picsum.photos/seed/${seed}/400/300`;
+            
+            imageHistory.unshift({
+                url: newImgUrl,
+                poemPreview: generatedPoemText.substring(0, 30) + "..."
+            });
+
+            if (imageHistory.length > 3) {
+                imageHistory.pop();
+            }
+
+            renderGallery();
+            
+            setTimeout(() => {
+                 poemDisplay.innerText = generatedPoemText;
+                 statusMsg.innerText = "画作已添加至画廊！";
+                 // 显示继续按钮
+                 btnContinue.style.display = 'block';
+            }, 800);
+        }
+
+        function renderGallery() {
+            galleryContainer.innerHTML = '';
+            
+            if (imageHistory.length === 0) {
+                galleryContainer.innerHTML = '<div style="color: #666; text-align: center; margin-top: 50px; font-style: italic;">暂无作品</div>';
+                return;
+            }
+
+            imageHistory.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'gallery-item';
+                div.innerHTML = `
+                    <img src="${item.url}" class="gallery-img" alt="Art">
+                    <div class="gallery-caption" title="${item.poemPreview}">${item.poemPreview}</div>
+                `;
+                galleryContainer.appendChild(div);
+            });
+        }
+
+        // === 新增：继续游戏逻辑 ===
+        function continueGame() {
+            // 1. 清空当前单词收集，准备下一轮
+            collectedWords = [];
+            
+            // 2. 隐藏创作面板，恢复游戏界面
+            creationPanel.classList.add('hidden');
+            
+            // 3. 重置状态提示
+            updateUI();
+            statusMsg.innerText = "继续收集单词...";
+            statusMsg.style.color = "#888";
+
+            // 4. 恢复游戏运行
+            isGameRunning = true;
+            // 不重置 score 和 snake，保留进度
+            // 注意：因为 collectedWords 清空了，速度会重置为初始速度，
+            // 这样给玩家一点缓冲时间，因为蛇已经很长了。
+            gameLoop();
+        }
+
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) e.preventDefault();
+            if (!isGameRunning) return;
+
+            switch (e.key) {
+                case 'ArrowUp': if (velocity.y === 0) velocity = { x: 0, y: -1 }; break;
+                case 'ArrowDown': if (velocity.y === 0) velocity = { x: 0, y: 1 }; break;
+                case 'ArrowLeft': if (velocity.x === 0) velocity = { x: -1, y: 0 }; break;
+                case 'ArrowRight': if (velocity.x === 0) velocity = { x: 1, y: 0 }; break;
+            }
+        });
+
+    </script>
+</body>
+</html>
