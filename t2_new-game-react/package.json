@@ -1,0 +1,23 @@
+{
+  "name": "2048-game-react",
+  "version": "1.0.0",
+  "description": "A 2048 game built with React featuring level system and fruit collection",
+  "main": "index.js",
+  "scripts": {
+    "start": "python3 -m http.server 3001",
+    "build": "echo 'Build complete'",
+    "test": "echo 'No tests specified'"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": ["2048", "game", "react", "puzzle"],
+  "author": "",
+  "license": "MIT"
+}
