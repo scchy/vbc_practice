@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电商草稿生成器 - 功能演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .demo-interface {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px dashed #667eea;
+        }
+
+        .upload-area {
+            text-align: center;
+            padding: 40px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .product-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .product-points {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .status-success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-processing {
+            background: #FF9800;
+            color: white;
+        }
+
+        .access-links {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .access-links a {
+            display: inline-block;
+            margin: 10px;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .access-links a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .tech-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .tech-stack {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tech-badge {
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 电商草稿生成器</h1>
+            <p>AI驱动的批量商品主图 + 标题 + 卖点生成工具</p>
+        </div>
+
+        <div class="demo-interface">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #667eea;">🎯 功能演示</h2>
+            
+            <div class="upload-section">
+                <h3>📊 步骤1：上传Excel文件</h3>
+                <div class="upload-area" onclick="alert('在实际应用中，这里会打开文件选择器')">
+                    <p>📁 点击或拖拽Excel文件到此处</p>
+                    <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                        支持 .xlsx 格式，需包含：name, category, brand, material, size, color, targetGroup 字段
+                    </p>
+                </div>
+            </div>
+
+            <div class="upload-section">
+                <h3>🖼️ 步骤2：上传商品图片（可选）</h3>
+                <div class="upload-area" onclick="alert('在实际应用中，这里会打开图片选择器')">
+                    <p>📸 点击或拖拽图片到此处</p>
+                    <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                        支持 JPG/PNG 格式，自动压缩到800px宽，<200KB
+                    </p>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="btn" onclick="generateResults()">🚀 生成草稿</button>
+                <button class="btn" onclick="downloadResults()">📦 打包下载</button>
+            </div>
+
+            <div id="results" class="results-grid" style="display: none;">
+                <div class="result-card">
+                    <div class="product-image">商品主图预览</div>
+                    <div class="product-title">纯棉T恤 - 舒适透气，时尚百搭</div>
+                    <div class="product-points">
+                        ✅ 100%纯棉材质，亲肤透气<br>
+                        ✅ 经典版型，适合各种身材<br>
+                        ✅ 多色可选，百搭时尚
+                    </div>
+                    <span class="status-indicator status-success">✅ 生成完成</span>
+                </div>
+
+                <div class="result-card">
+                    <div class="product-image">运动鞋主图预览</div>
+                    <div class="product-title">耐克运动鞋 - 专业运动，舒适体验</div>
+                    <div class="product-points">
+                        ✅ 专业运动科技，缓震出色<br>
+                        ✅ 透气网面，保持干爽<br>
+                        ✅ 耐磨大底，持久耐用
+                    </div>
+                    <span class="status-indicator status-success">✅ 生成完成</span>
+                </div>
+
+                <div class="result-card">
+                    <div class="product-image">连衣裙主图预览</div>
+                    <div class="product-title">ZARA连衣裙 - 优雅时尚，都市女性首选</div>
+                    <div class="product-points">
+                        ✅ 优雅剪裁，展现女性魅力<br>
+                        ✅ 高品质面料，舒适贴身<br>
+                        ✅ 时尚设计，彰显品味
+                    </div>
+                    <span class="status-indicator status-success">✅ 生成完成</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="access-links">
+            <h3 style="color: white; margin-bottom: 20px;">🔗 访问链接</h3>
+            <a href="http://localhost:3060" target="_blank">🚀 前端应用 (端口3060)</a>
+            <a href="http://localhost:8000/docs" target="_blank">📚 API文档 (端口8000)</a>
+            <a href="http://localhost:8080/frontend-showcase.html" target="_blank">🎨 完整展示页面</a>
+        </div>
+
+        <div class="tech-info">
+            <h3>💻 技术栈</h3>
+            <div class="tech-stack">
+                <span class="tech-badge">Vue3</span>
+                <span class="tech-badge">Naive UI</span>
+                <span class="tech-badge">Vite</span>
+                <span class="tech-badge">TypeScript</span>
+                <span class="tech-badge">Pinia</span>
+                <span class="tech-badge">FastAPI</span>
+                <span class="tech-badge">SQLite</span>
+                <span class="tech-badge">OpenAI</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function generateResults() {
+            const results = document.getElementById('results');
+            results.style.display = 'grid';
+            
+            // 模拟生成过程
+            const cards = results.querySelectorAll('.result-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                        card.style.transition = 'all 0.5s ease';
+                    }, 100);
+                }, index * 200);
+            });
+            
+            alert('🎉 草稿生成完成！\n\n在实际应用中，这里会显示真实的AI生成结果。\n当前为演示模式，展示预设的示例数据。');
+        }
+        
+        function downloadResults() {
+            alert('📦 打包下载功能\n\n在实际应用中，这里会：\n- 生成ZIP文件\n- 包含所有主图PNG文件\n- 包含商品信息CSV文件\n- 自动下载到本地');
+        }
+        
+        // 页面加载动画
+        window.addEventListener('load', () => {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s ease';
+            
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
