@@ -5,7 +5,7 @@ import asyncio
 from contextlib import asynccontextmanager
 
 from database import init_db
-from routers import draft, download
+from routers import draft, download, image_analysis
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -35,6 +35,7 @@ app.add_middleware(
 # 注册路由
 app.include_router(draft.router)
 app.include_router(download.router)
+app.include_router(image_analysis.router)
 
 # 全局异常处理
 @app.exception_handler(Exception)

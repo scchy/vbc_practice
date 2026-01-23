@@ -59,7 +59,7 @@
       <div class="upload-section">
         <div class="section-header">
           <n-text class="section-title">🖼️ 商品图片上传</n-text>
-          <n-text depth="3" class="section-subtitle">支持批量上传，自动优化处理</n-text>
+          <n-text depth="3" class="section-subtitle">支持批量上传，自动优化处理 + AI 智能分析</n-text>
         </div>
         
         <n-upload
@@ -84,11 +84,52 @@
                   <n-tag size="small" type="success" round>自动压缩</n-tag>
                   <n-tag size="small" type="info" round>格式优化</n-tag>
                   <n-tag size="small" type="warning" round>智能裁剪</n-tag>
+                  <n-tag size="small" type="error" round>AI分析</n-tag>
                 </n-space>
               </div>
             </div>
           </n-upload-dragger>
         </n-upload>
+        
+        <!-- AI图片分析功能 -->
+        <div class="ai-analysis-section">
+          <n-divider />
+          <div class="analysis-header">
+            <n-space align="center" :size="12">
+              <n-icon size="20" color="#f5222d">
+                <sparkles-icon />
+              </n-icon>
+              <n-text class="analysis-title">AI 智能分析</n-text>
+              <n-tag type="error" size="small" round>新功能</n-tag>
+            </n-space>
+          </div>
+          
+          <n-space vertical :size="16">
+            <n-text depth="3" class="analysis-desc">
+              上传单张商品图片，AI 将自动识别商品类型、提取卖点、生成关键词和电商文案
+            </n-text>
+            
+            <n-upload
+              :max="1"
+              accept="image/*"
+              :custom-request="handleAIAnalysis"
+              @remove="handleAIAnalysisRemove"
+              class="ai-upload"
+            >
+              <n-upload-dragger class="ai-dragger">
+                <div class="ai-dragger-content">
+                  <n-icon size="32" color="#f5222d" class="ai-icon">
+                    <brain-icon />
+                  </n-icon>
+                  <n-text class="ai-title">AI 分析图片</n-text>
+                  <n-text depth="3" class="ai-desc">
+                    点击上传单张图片进行AI智能分析
+                  </n-text>
+                </div>
+              </n-upload-dragger>
+            </n-upload>
+          </n-space>
+        </div>
         
         <!-- 上传进度 -->
         <div v-if="uploadingImages" class="progress-container">
@@ -96,9 +137,9 @@
             <n-text class="progress-title">正在上传和优化图片...</n-text>
             <n-text depth="3" class="progress-percent">{{ Math.round(uploadProgress) }}%</n-text>
           </div>
-          <n-progress 
-            type="line" 
-            :percentage="uploadProgress" 
+          <n-progress
+            type="line"
+            :percentage="uploadProgress"
             :indicator-placement="'inside'"
             :color="themeOverrides.common?.primaryColor"
             :rail-color="'#f0f0f0'"
@@ -176,18 +217,27 @@ import {
   NSpin,
   useMessage
 } from 'naive-ui'
-import { 
+import {
   DocumentText as DocumentTextIcon,
   Images as ImagesIcon,
   CloudUpload as CloudUploadIcon,
-  Magic as MagicIcon
+  Magic as MagicIcon,
+  Sparkles as SparklesIcon,
+  Brain as BrainIcon
 } from '@vicons/ionicons5'
+
+const emit = defineEmits<{
+  aiAnalysisComplete: [result: any]
+  aiAnalysisClear: []
+}>()
 
 const message = useMessage()
 const uploadStore = useUploadStore()
 
 const excelFileList = ref([])
 const imageFileList = ref([])
+const aiAnalysisFileList = ref([])
+const isAnalyzing = ref(false)
 
 const {
   products: hasProducts,
@@ -252,6 +302,38 @@ const handleGenerate = async () => {
     message.error('❌ 生成草稿失败')
     console.error(error)
   }
+}
+
+// AI图片分析处理
+const handleAIAnalysis = async ({ file }: { file: File }) => {
+  isAnalyzing.value = true
+  
+  try {
+    // 调用AI分析API
+    const result = await uploadApi.analyzeImageFromUpload(file)
+    
+    if (result.success) {
+      // 将分析结果传递给父组件
+      emit('aiAnalysisComplete', result)
+      message.success('🎉 AI 分析完成！已生成商品信息和文案')
+      aiAnalysisFileList.value = [file]
+    } else {
+      message.error('❌ AI 分析失败，请重试')
+      aiAnalysisFileList.value = []
+    }
+  } catch (error) {
+    message.error('❌ AI 分析失败，请检查网络连接')
+    console.error(error)
+    aiAnalysisFileList.value = []
+  } finally {
+    isAnalyzing.value = false
+  }
+}
+
+const handleAIAnalysisRemove = () => {
+  aiAnalysisFileList.value = []
+  emit('aiAnalysisClear')
+  message.info('AI 分析已清除')
 }
 </script>
 
@@ -462,6 +544,85 @@ const handleGenerate = async () => {
   
   .card-title {
     font-size: 18px;
+  }
+}
+
+/* AI分析相关样式 */
+.ai-analysis-section {
+  margin-top: 24px;
+  padding: 20px;
+  background: linear-gradient(135deg, #fff1f0 0%, #ffebe8 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(245, 34, 45, 0.1);
+}
+
+.analysis-header {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.analysis-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #f5222d;
+}
+
+.analysis-desc {
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.ai-upload {
+  margin-top: 16px;
+}
+
+.ai-dragger {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px dashed rgba(245, 34, 45, 0.3);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.ai-dragger:hover {
+  border-color: #f5222d;
+  background: rgba(245, 34, 45, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(245, 34, 45, 0.2);
+}
+
+.ai-dragger-content {
+  text-align: center;
+  padding: 24px 20px;
+}
+
+.ai-icon {
+  margin-bottom: 12px;
+  animation: brainPulse 2s infinite;
+}
+
+.ai-title {
+  font-size: 16px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+  color: #f5222d;
+}
+
+.ai-desc {
+  font-size: 13px;
+  display: block;
+  color: #666;
+}
+
+@keyframes brainPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
   }
 }
 </style>

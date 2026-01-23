@@ -20,13 +20,57 @@
       <!-- 左侧上传区域 -->
       <n-gi :span="10">
         <div class="sticky-container">
-          <upload-card />
+          <upload-card
+            @ai-analysis-complete="handleAIAnalysisComplete"
+            @ai-analysis-clear="handleAIAnalysisClear"
+          />
         </div>
       </n-gi>
 
       <!-- 右侧结果区域 -->
       <n-gi :span="14">
         <n-space vertical :size="24">
+          <!-- AI图片分析结果 -->
+          <n-card
+            v-if="analysisResult"
+            class="section-card"
+            hoverable
+            :class="{ 'processing': isAnalyzing }"
+          >
+            <template #header>
+              <div class="section-header">
+                <n-space align="center" :size="12">
+                  <n-icon size="20" color="#f5222d">
+                    <analytics-icon />
+                  </n-icon>
+                  <n-text class="section-title">AI 图片分析</n-text>
+                  <n-tag
+                    v-if="isAnalyzing"
+                    type="warning"
+                    round
+                    size="small"
+                    :loading="true"
+                  >
+                    分析中
+                  </n-tag>
+                  <n-tag
+                    v-else-if="analysisResult"
+                    type="success"
+                    round
+                    size="small"
+                  >
+                    分析完成
+                  </n-tag>
+                </n-space>
+              </div>
+            </template>
+            <image-analysis-results
+              :analysis-result="analysisResult"
+              :loading="isAnalyzing"
+              @use-as-product="handleUseAIProduct"
+            />
+          </n-card>
+
           <!-- 商品列表卡片 -->
           <n-card class="section-card" hoverable>
             <template #header>
@@ -46,9 +90,9 @@
           </n-card>
 
           <!-- 生成结果卡片 -->
-          <n-card 
-            v-if="jobId" 
-            class="section-card" 
+          <n-card
+            v-if="jobId"
+            class="section-card"
             hoverable
             :class="{ 'processing': isProcessing }"
           >
@@ -59,19 +103,19 @@
                     <magic-icon />
                   </n-icon>
                   <n-text class="section-title">AI 生成结果</n-text>
-                  <n-tag 
-                    v-if="isProcessing" 
-                    type="warning" 
-                    round 
+                  <n-tag
+                    v-if="isProcessing"
+                    type="warning"
+                    round
                     size="small"
                     :loading="true"
                   >
                     生成中
                   </n-tag>
-                  <n-tag 
-                    v-else-if="isDone" 
-                    type="success" 
-                    round 
+                  <n-tag
+                    v-else-if="isDone"
+                    type="success"
+                    round
                     size="small"
                   >
                     已完成
@@ -106,31 +150,41 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useUploadStore } from '@/stores/upload'
 import UploadCard from '@/components/UploadCard.vue'
 import ProductTable from '@/components/ProductTable.vue'
 import DraftResults from '@/components/DraftResults.vue'
-import { 
-  NGrid, 
-  NGi, 
-  NCard, 
-  NSpace, 
+import ImageAnalysisResults from '@/components/ImageAnalysisResults.vue'
+import { ImageAnalysisResult } from '@/api'
+import {
+  NGrid,
+  NGi,
+  NCard,
+  NSpace,
   NText,
   NIcon,
   NTag,
   NFloatButton,
-  NTooltip
+  NTooltip,
+  useMessage
 } from 'naive-ui'
-import { 
+import {
   Rocket as RocketIcon,
   List as ListIcon,
   Magic as MagicIcon,
-  Help as HelpIcon
+  Help as HelpIcon,
+  Analytics as AnalyticsIcon
 } from '@vicons/ionicons5'
 
+const message = useMessage()
 const uploadStore = useUploadStore()
 const { jobId, isProcessing, isDone } = storeToRefs(uploadStore)
+
+// AI分析相关状态
+const analysisResult = ref<ImageAnalysisResult | null>(null)
+const isAnalyzing = ref(false)
 
 const handleUploadExcel = () => {
   // 触发上传 Excel 的逻辑
@@ -143,6 +197,25 @@ const handleUploadExcel = () => {
 const handleRefresh = () => {
   // 刷新数据逻辑
   window.location.reload()
+}
+
+// 处理AI分析完成
+const handleAIAnalysisComplete = (result: ImageAnalysisResult) => {
+  analysisResult.value = result
+  isAnalyzing.value = false
+}
+
+// 处理AI分析清除
+const handleAIAnalysisClear = () => {
+  analysisResult.value = null
+  isAnalyzing.value = false
+}
+
+// 使用AI分析的商品
+const handleUseAIProduct = (productInfo: any) => {
+  // 将AI分析的商品添加到商品列表
+  uploadStore.products = [productInfo]
+  message.success('AI分析的商品已添加到商品列表')
 }
 </script>
 

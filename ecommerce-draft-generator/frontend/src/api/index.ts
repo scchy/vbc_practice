@@ -37,6 +37,39 @@ export interface JobStatus {
   }>
 }
 
+// 图片分析相关接口
+export interface ImageAnalysisResult {
+  status: 'success' | 'error'
+  message: string
+  data: {
+    product_info: {
+      name: string
+      category: string
+      brand: string
+      material: string
+      size: string
+      color: string
+      targetGroup: string
+      imageUrl: string
+    }
+    analysis: {
+      selling_points: string[]
+      keywords: string[]
+      description: string
+      target_audience: string
+    }
+    generated_content: {
+      title: string
+      selling_points: string
+      brand: string
+      material: string
+      size: string
+      color: string
+      target_group: string
+    }
+  }
+}
+
 export const uploadApi = {
   // 上传图片到 Cloudinary
   uploadImage: async (file: File): Promise<string> => {
@@ -69,5 +102,35 @@ export const uploadApi = {
       responseType: 'blob'
     })
     return response.data
+  },
+
+  // 图片分析相关API
+  analyzeImageFromUrl: async (imageUrl: string): Promise<ImageAnalysisResult> => {
+    const response = await api.post('/image-analysis/analyze-from-url', { image_url: imageUrl })
+    return response.data
+  },
+
+  analyzeImageFromUpload: async (file: File): Promise<ImageAnalysisResult> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    
+    const response = await api.post('/image-analysis/analyze-from-upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response.data
+  },
+
+  uploadImageToServer: async (file: File): Promise<string> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    
+    const response = await api.post('/image-analysis/upload-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response.data.image_url
   }
 }

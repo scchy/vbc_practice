@@ -150,5 +150,25 @@ class ImageProcessor:
         except Exception as e:
             print(f"添加文字失败: {e}")
 
+    async def upload_to_cloudinary(self, file_content: bytes, filename: str) -> Optional[str]:
+        """上传图片到Cloudinary"""
+        try:
+            # 上传到 Cloudinary
+            upload_result = cloudinary.uploader.upload(
+                file_content,
+                folder="ecommerce-analysis",
+                format="webp",
+                quality="auto:good",
+                width=800,
+                height=800,
+                crop="limit"
+            )
+            
+            return upload_result['secure_url']
+            
+        except Exception as e:
+            print(f"上传到Cloudinary失败: {e}")
+            return None
+
 # 全局图片处理器实例
 image_processor = ImageProcessor()

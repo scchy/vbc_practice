@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>界面功能测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>AI电商卖点生成器 - 界面功能测试</h1>
+    
+    <div class="test-section">
+        <h3>测试项目</h3>
+        <button onclick="testConnection()">测试服务连接</button>
+        <button onclick="testAPI()">测试API接口</button>
+        <button onclick="window.open('http://localhost:8000', '_blank')">打开主应用</button>
+    </div>
+    
+    <div id="testResults"></div>
+    
+    <script>
+        function addResult(message, isSuccess = true) {
+            const results = document.getElementById('testResults');
+            const div = document.createElement('div');
+            div.className = isSuccess ? 'success' : 'error';
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        async function testConnection() {
+            try {
+                const response = await fetch('http://localhost:8000/');
+                if (response.ok) {
+                    addResult('✅ 服务连接正常');
+                } else {
+                    addResult('❌ 服务连接失败: ' + response.status, false);
+                }
+            } catch (error) {
+                addResult('❌ 连接错误: ' + error.message, false);
+            }
+        }
+        
+        async function testAPI() {
+            try {
+                // 创建一个简单的测试图片
+                const canvas = document.createElement('canvas');
+                canvas.width = 200;
+                canvas.height = 200;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#f0f0f0';
+                ctx.fillRect(0, 0, 200, 200);
+                ctx.fillStyle = '#333';
+                ctx.font = '16px Arial';
+                ctx.fillText('测试商品', 50, 100);
+                
+                canvas.toBlob(async (blob) => {
+                    const formData = new FormData();
+                    formData.append('file', blob, 'test.jpg');
+                    
+                    try {
+                        const response = await fetch('http://localhost:8000/api/analyze-image', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            addResult('✅ API接口正常，生成了 ' + data.analysis.selling_points.length + ' 个卖点');
+                        } else {
+                            addResult('❌ API调用失败: ' + response.status, false);
+                        }
+                    } catch (error) {
+                        addResult('❌ API错误: ' + error.message, false);
+                    }
+                }, 'image/jpeg');
+                
+            } catch (error) {
+                addResult('❌ 测试失败: ' + error.message, false);
+            }
+        }
+        
+        // 页面加载时自动测试连接
+        window.addEventListener('load', () => {
+            setTimeout(testConnection, 1000);
+        });
+    </script>
+</body>
+</html>

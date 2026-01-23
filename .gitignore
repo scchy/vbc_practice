@@ -13,6 +13,9 @@ ecommerce-draft-generator/backend/ecommerce_draft.db
 **/dist*/
 *.local
 
+*/test_images/*
+*/uploads/*
+
 .DS_Store
 Thumbs.db
 *.log
