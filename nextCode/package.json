@@ -1,0 +1,239 @@
+{
+  "name": "nextcode",
+  "displayName": "NextCode",
+  "description": "AI-powered code completion with support for Chinese LLM APIs",
+  "version": "0.2.0",
+  "publisher": "nextcode",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "AI",
+    "Machine Learning"
+  ],
+  "keywords": [
+    "copilot",
+    "ai",
+    "code completion",
+    "deepseek",
+    "qwen",
+    "kimi",
+    "国产大模型"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "NextCode",
+      "properties": {
+        "nextCode.apiProvider": {
+          "type": "string",
+          "default": "deepseek",
+          "enum": [
+            "deepseek",
+            "qwen",
+            "baichuan",
+            "zhipu",
+            "minimax",
+            "tencent",
+            "openai",
+            "kimi",
+            "custom"
+          ],
+          "enumDescriptions": [
+            "DeepSeek (深度求索)",
+            "通义千问 (阿里云)",
+            "Baichuan (百川智能)",
+            "智谱 AI (GLM)",
+            "MiniMax",
+            "腾讯混元",
+            "OpenAI",
+            "Kimi (Moonshot)",
+            "自定义 API"
+          ],
+          "description": "选择 AI 模型提供商"
+        },
+        "nextCode.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API 密钥（从对应平台获取）"
+        },
+        "nextCode.apiEndpoint": {
+          "type": "string",
+          "default": "",
+          "description": "自定义 API 端点（仅 custom 模式需要）"
+        },
+        "nextCode.model": {
+          "type": "string",
+          "default": "deepseek-chat",
+          "description": "模型名称（不同提供商支持不同模型）"
+        },
+        "nextCode.maxTokens": {
+          "type": "number",
+          "default": 100,
+          "minimum": 10,
+          "maximum": 4096,
+          "description": "生成的最大 token 数"
+        },
+        "nextCode.temperature": {
+          "type": "number",
+          "default": 0.7,
+          "minimum": 0,
+          "maximum": 2,
+          "description": "生成温度（0-2，越高越随机）"
+        },
+        "nextCode.enableInlineSuggestions": {
+          "type": "boolean",
+          "default": true,
+          "description": "启用行内代码提示"
+        },
+        "nextCode.showUsage": {
+          "type": "boolean",
+          "default": true,
+          "description": "在状态栏显示使用量"
+        },
+        "nextCode.debounceDelay": {
+          "type": "number",
+          "default": 300,
+          "minimum": 100,
+          "maximum": 2000,
+          "description": "防抖延迟（毫秒）"
+        },
+        "nextCode.contextLines": {
+          "type": "number",
+          "default": 20,
+          "minimum": 5,
+          "maximum": 50,
+          "description": "上下文行数"
+        },
+        "nextCode.enableLogging": {
+          "type": "boolean",
+          "default": false,
+          "description": "启用调试日志（查看控制台输出）"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "nextCode.openSettings",
+        "title": "NextCode: 打开设置",
+        "category": "NextCode"
+      },
+      {
+        "command": "nextCode.openSettingsSidebar",
+        "title": "NextCode: 在侧边栏打开设置",
+        "category": "NextCode"
+      },
+      {
+        "command": "nextCode.toggleSuggestions",
+        "title": "NextCode: 切换代码提示",
+        "category": "NextCode"
+      },
+      {
+        "command": "nextCode.showUsage",
+        "title": "NextCode: 显示使用量统计",
+        "category": "NextCode"
+      },
+      {
+        "command": "nextCode.resetStats",
+        "title": "NextCode: 重置使用统计",
+        "category": "NextCode"
+      },
+      {
+        "command": "nextCode.triggerCompletion",
+        "title": "NextCode: 手动触发代码补全",
+        "category": "NextCode"
+      },
+      {
+        "command": "nextCode.acceptCompletion",
+        "title": "NextCode: 接受当前建议",
+        "category": "NextCode"
+      },
+      {
+        "command": "nextCode.rejectCompletion",
+        "title": "NextCode: 拒绝当前建议",
+        "category": "NextCode"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "nextCode.triggerCompletion",
+        "key": "ctrl+shift+space",
+        "mac": "cmd+shift+space",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "nextCode.acceptCompletion",
+        "key": "tab",
+        "when": "inlineSuggestionVisible && editorTextFocus"
+      },
+      {
+        "command": "nextCode.rejectCompletion",
+        "key": "escape",
+        "when": "inlineSuggestionVisible && editorTextFocus"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "nextCode.openSettings",
+          "when": "true"
+        },
+        {
+          "command": "nextCode.toggleSuggestions",
+          "when": "true"
+        },
+        {
+          "command": "nextCode.showUsage",
+          "when": "true"
+        },
+        {
+          "command": "nextCode.resetStats",
+          "when": "true"
+        },
+        {
+          "command": "nextCode.triggerCompletion",
+          "when": "editorTextFocus"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "nextCode.triggerCompletion",
+          "group": "9_cutcopypaste@5",
+          "when": "editorTextFocus"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0",
+    "@types/mocha": "^10.0.0",
+    "mocha": "^10.0.0",
+    "@vscode/test-electron": "^2.0.0",
+    "@vscode/vsce": "^2.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/nextcode"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/nextcode/issues"
+  },
+  "homepage": "https://github.com/your-username/nextcode#readme"
+}
